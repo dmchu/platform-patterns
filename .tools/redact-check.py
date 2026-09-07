@@ -43,6 +43,10 @@ def load_rules(path, profile):
 # which necessarily contains the very patterns it searches for.
 SKIP_DIRS = {".git", "node_modules", ".venv", ".venv-md", "lib", "target", "__pycache__"}
 SELF = os.path.basename(__file__)
+# The term file necessarily contains every term, so scanning it always "fails". Excluding it
+# is not a loophole -- it is gitignored and never shipped. A checker that cries wolf on every
+# run gets ignored, and an ignored checker is worse than none.
+SELF_EXCLUDE = {SELF, "terms.json"}
 TEXT_EXT = {".md", ".py", ".ts", ".js", ".yaml", ".yml", ".json", ".xml", ".txt", ".sh", ".toml", ".mmd", ""}
 
 
@@ -56,7 +60,7 @@ def scan(paths, rules):
             for dirpath, dirnames, filenames in os.walk(root):
                 dirnames[:] = [d for d in dirnames if d not in SKIP_DIRS]
                 for f in filenames:
-                    if f == SELF:
+                    if f in SELF_EXCLUDE:
                         continue
                     if os.path.splitext(f)[1].lower() in TEXT_EXT:
                         files.append(os.path.join(dirpath, f))
