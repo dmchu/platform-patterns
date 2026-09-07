@@ -1,0 +1,9 @@
+lib/
+target/
+.venv*/
+__pycache__/
+*.pyc
+.DS_Store
+
+# real redaction terms are local-only -- see .tools/terms.example.json
+.tools/terms.json

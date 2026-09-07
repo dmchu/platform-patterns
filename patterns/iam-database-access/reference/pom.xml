@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  A dependency set, not a build. `packaging: pom` produces no artefact; the point is
+  `dependency:copy-dependencies`, which materialises the runtime closure into lib/ so a
+  desktop SQL client can be pointed at it as a custom driver.
+
+    mvn -q dependency:copy-dependencies -DoutputDirectory=lib
+
+  WHY EACH ENTRY IS HERE -- this is the whole content of the pattern.
+
+    aws-advanced-jdbc-wrapper  the driver wrapper. Its `iam` plugin mints the database
+                               token per connection. Everything else here exists to make
+                               its credential lookup succeed on a workstation.
+
+    rds                        signs the token (SigV4 presign). Arrives transitively from
+                               the wrapper -- listed anyway, so the version is ours.
+
+    sts                        role assumption and web-identity exchange. Also transitive.
+                               Covers the in-cluster credential path.
+
+    sso        <-- NOT transitive.  Exchanges a cached SSO access token for role credentials.
+    ssooidc    <-- NOT transitive.  Reads and refreshes the SSO token cache.
+
+  Those last two are the entire reason this file exists. The wrapper does not declare them
+  and nothing in the transitive closure does either, because the wrapper is designed for
+  workloads that authenticate by instance role or projected web identity -- not for a laptop
+  holding an SSO session.
+
+  The failure without them is nastier than a missing class, because the profile-reading
+  module DOES arrive transitively: the SDK reads ~/.aws/config, finds your profile,
+  recognises it as an SSO profile, and then cannot resolve it. You get a credentials error
+  against a profile that works perfectly in the CLI, and nothing points at the classpath.
+
+  Pin every version. A driver bundle that silently changes under you is worse than one that
+  is out of date, because you will debug the auth path rather than the upgrade.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>local</groupId>
+  <artifactId>aws-jdbc-deps</artifactId>
+  <version>1</version>
+  <packaging>pom</packaging>
+
+  <properties>
+    <aws.sdk.version>2.29.20</aws.sdk.version>
+    <wrapper.version>2.5.4</wrapper.version>
+    <postgres.version>42.7.4</postgres.version>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>software.amazon.jdbc</groupId>
+      <artifactId>aws-advanced-jdbc-wrapper</artifactId>
+      <version>${wrapper.version}</version>
+    </dependency>
+
+    <!-- token generation -->
+    <dependency>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>rds</artifactId>
+      <version>${aws.sdk.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>sts</artifactId>
+      <version>${aws.sdk.version}</version>
+    </dependency>
+
+    <!-- credential resolution for an SSO profile. NOT pulled in by anything above. -->
+    <dependency>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>sso</artifactId>
+      <version>${aws.sdk.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>ssooidc</artifactId>
+      <version>${aws.sdk.version}</version>
+    </dependency>
+
+    <!-- the database driver the wrapper wraps -->
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <version>${postgres.version}</version>
+    </dependency>
+  </dependencies>
+</project>

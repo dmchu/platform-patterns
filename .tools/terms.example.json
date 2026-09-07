@@ -1,0 +1,94 @@
+{
+ "_comment": [
+  "Copy to terms.json and replace with your own terms. terms.json is gitignored.",
+  "Keeping real terms out of source is the point: a committed rule list naming your",
+  "employer, its partners and your colleagues is itself the disclosure it prevents.",
+  "'always' runs in both profiles. 'post_only' adds strictness for public writing --",
+  "a portfolio may reasonably name the tools it used; a public post about the same work",
+  "usually should not."
+ ],
+ "always": [
+  {
+   "name": "employer",
+   "pattern": "\\b(acme|acmecorp)\\b",
+   "note": "employer / product name"
+  },
+  {
+   "name": "ticket-id",
+   "pattern": "\\b(OPS|ENG|SEC)-\\d{1,5}\\b",
+   "note": "internal ticket id"
+  },
+  {
+   "name": "repo-name",
+   "pattern": "\\b(internal-repo-one|internal-repo-two)\\b",
+   "note": "internal repo name"
+  },
+  {
+   "name": "environment",
+   "pattern": "\\b(prod-\\w+|staging-\\w+|sandbox-\\w+)\\b",
+   "note": "cluster / environment name"
+  },
+  {
+   "name": "service-name",
+   "pattern": "\\b(billing-service|user-service)\\b",
+   "note": "internal service name"
+  },
+  {
+   "name": "partner",
+   "pattern": "\\b(partner-one|partner-two)\\b",
+   "note": "partner / counterparty name"
+  },
+  {
+   "name": "colleague",
+   "pattern": "\\b(surname-one|surname-two)\\b",
+   "note": "colleague surname (not your own -- that is authorship)"
+  },
+  {
+   "name": "aws-account",
+   "pattern": "(?<!\\d)\\d{12}(?!\\d)",
+   "note": "12-digit account id"
+  },
+  {
+   "name": "aws-key",
+   "pattern": "\\b(AKIA|ASIA)[0-9A-Z]{8,}\\b",
+   "note": "access key id"
+  },
+  {
+   "name": "slack-token",
+   "pattern": "\\bxox[baprs]-[0-9A-Za-z-]{8,}\\b",
+   "note": "slack token"
+  },
+  {
+   "name": "slack-webhook",
+   "pattern": "hooks\\.slack\\.com/services/\\S+",
+   "note": "slack webhook url"
+  },
+  {
+   "name": "1p-share",
+   "pattern": "share\\.1password\\.com/\\S+",
+   "note": "password-manager share link (fragment IS the secret)"
+  },
+  {
+   "name": "private-key",
+   "pattern": "-----BEGIN [A-Z ]*PRIVATE KEY-----",
+   "note": "private key material"
+  },
+  {
+   "name": "local-path",
+   "pattern": "(/Users/[a-z]+/|~/notes)",
+   "note": "local path"
+  },
+  {
+   "name": "internal-host",
+   "pattern": "\\b[a-z0-9-]+\\.cluster-[a-z0-9]+\\.[a-z0-9-]+\\.rds\\.amazonaws\\.com\\b",
+   "note": "database endpoint"
+  }
+ ],
+ "post_only": [
+  {
+   "name": "vendor-named",
+   "pattern": "\\b(vendor-one|vendor-two)\\b",
+   "note": "vendor named -- describe precisely instead"
+  }
+ ]
+}
