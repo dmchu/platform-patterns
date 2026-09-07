@@ -82,7 +82,7 @@ subscription worked perfectly throughout:
 - the replacement node launched in **two to four minutes**
 - zero out-of-memory kills, no restart anomalies
 
-**And six customer-facing services still went dark for two to four minutes each.**
+**And six services still went dark for two to four minutes each** — in a partner-facing integration environment, blocking a partner's own testing for hours while three plausible and entirely wrong causes were investigated first.
 
 Because the notice period was never the limiting factor, and neither was replacement capacity. It
 was **pod topology**. The services that went dark were single-replica, or had two replicas that
