@@ -43,6 +43,9 @@ failure was at a layer the documentation does not lead you to.
   delivery is verified against the destination's logical status rather than the HTTP code.
 - Route keys and handler code must ship in the right order, and the tooling must be able to see
   the handler's source. Both are covered in the pattern's README.
+- Delivery state is part of the contract. A suppression rule that ignores resolution hides every
+  re-fire, and a record that ignores the channel keeps suppressing after a route moves. Both are
+  in the pattern's README with what they cost, and both have a test in the reference.
 
 ## Reopen if
 

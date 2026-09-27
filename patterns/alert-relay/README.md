@@ -59,11 +59,24 @@ parser runs.
 Keying identity on the prefix rather than the whole key is what stops the identity map growing at
 the same rate as the routing map.
 
-See [`reference/relay.py`](reference/relay.py) — the whole thing is about 120 lines.
+**One message per episode, and the state to keep it that way.** The relay keeps one record per
+(route, alert group): the episode is posted once when it fires, marked with a reaction on that
+same message when it resolves, and posted again if it fires after that. The record is the third
+thing the route key decides, and its semantics are exact:
+
+| Event | Record | Action |
+|---|---|---|
+| firing | none, or resolved, or open in a *different* channel | post; record `open` |
+| firing | open in this channel | nothing, it is already on screen |
+| resolved | open | a reaction on the original; record `resolved` |
+| resolved | none | post a resolved message, because losing the resolve is worse than one extra line |
+
+See [`reference/relay.py`](reference/relay.py), about 230 lines with its tests, and the tests
+are sentences from this page.
 
 ---
 
-## What fails without it, and what still fails with it
+## What fails silently
 
 **The unmatched key is the interesting case, and it deserves a deliberate decision.** A route key
 that matches nothing gets logged and rejected with a 4xx. Nothing is queued, retried or
@@ -97,6 +110,34 @@ worth more than the fix:
 wrong channel, revoked scope, archived conversation. Parse the destination's *logical* status,
 not the transport status code, and fail on it. A relay that ran cleanly for a day while
 delivering nothing is a real and unremarkable outcome.
+
+Three more were found after this pattern was first written down:
+
+**A duplicate check that ignores status hides every re-fire.** "Is there a record for this
+group?" and "is there an *open* record for this group?" look the same in review and are not.
+With the first, every firing after a resolve is skipped for the life of the record — seven days
+here — while the channel shows the old message with its resolved mark. Measured in the reference
+estate over thirty days: 202 firings dropped across two producers, and one production alert shown
+resolved for a week while it was firing, with 46 notifications lost. Nothing paged, because that
+alert had no other receiver. The fix is one word in the condition, and the regression test for it
+is the most important test in the reference.
+
+**The relay cannot be the thing that tells you the relay is broken.** Every failure on this page
+shares a shape: the relay is the only path to the humans, so its own failure is delivered to
+nobody. Put the alarm on a different transport — the platform's own alarm on the function's error
+metric and on the front door's server errors, delivered by email rather than chat — and log the
+destination's `ok: false` as an error so a log-based alarm sees it too. The first such alarm in
+the reference estate would have caught 198 unhandled errors in the month before it existed. One
+trap inside the fix: an email subscription left unconfirmed is deleted by the platform after two
+days, and the alarm then emails nobody, which is the exact failure it exists to prevent.
+
+**Group by the entity, or the second one is never posted.** Once the relay posts once per open
+group, the producer's grouping decides who gets seen. Group only by alert name, and the second
+customer, host or queue hitting the same rule while the first is still open joins an already-open
+group and is never posted; if something is always affected, the group never resolves and nothing
+new appears at all. The fix is on the producer: put the label that names the affected entity into
+the group. It surfaced while writing a per-customer alert against this relay: with the default
+grouping, sixteen stuck customers would have produced one message.
 
 ---
 
