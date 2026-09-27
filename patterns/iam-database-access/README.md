@@ -119,7 +119,7 @@ survives a rename and does not follow a restored clone.
 
 ---
 
-## What fails without it, and what still fails with it
+## What fails silently
 
 | Failure | Why |
 |---|---|

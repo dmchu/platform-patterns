@@ -105,7 +105,7 @@ and it is a separate piece of work that has to be costed separately.
 
 ---
 
-## The silences
+## What fails silently
 
 True to the rest of this repository, every layer here failed quietly at least once.
 

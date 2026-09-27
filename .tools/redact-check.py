@@ -45,12 +45,14 @@ SKIP_DIRS = {".git", "node_modules", ".venv", ".venv-md", "lib", "target", "__py
 SELF = os.path.basename(__file__)
 # The term file necessarily contains every term, so scanning it always "fails". Excluding it
 # is not a loophole -- it is gitignored and never shipped. A checker that cries wolf on every
-# run gets ignored, and an ignored checker is worse than none.
+# run gets ignored, and an ignored checker is worse than none. The same applies to whichever
+# file was passed as --terms (CI runs on the shipped example, whose placeholders match their
+# own notes), so that file is excluded by name at runtime as well.
 SELF_EXCLUDE = {SELF, "terms.json"}
 TEXT_EXT = {".md", ".py", ".ts", ".js", ".yaml", ".yml", ".json", ".xml", ".txt", ".sh", ".toml", ".mmd", ""}
 
 
-def scan(paths, rules):
+def scan(paths, rules, exclude=SELF_EXCLUDE):
     hits = []
     for root in paths:
         if os.path.isfile(root):
@@ -60,7 +62,7 @@ def scan(paths, rules):
             for dirpath, dirnames, filenames in os.walk(root):
                 dirnames[:] = [d for d in dirnames if d not in SKIP_DIRS]
                 for f in filenames:
-                    if f in SELF_EXCLUDE:
+                    if f in exclude:
                         continue
                     if os.path.splitext(f)[1].lower() in TEXT_EXT:
                         files.append(os.path.join(dirpath, f))
@@ -86,7 +88,7 @@ if __name__ == "__main__":
                     help="JSON term file (default: .tools/terms.json, gitignored)")
     a = ap.parse_args()
     rules = load_rules(a.terms, a.profile)
-    hits = scan(a.paths, rules)
+    hits = scan(a.paths, rules, SELF_EXCLUDE | {os.path.basename(a.terms)})
     if not hits:
         print(f"  clean ({a.profile} profile, {len(rules)} rules)")
         sys.exit(0)

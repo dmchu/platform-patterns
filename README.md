@@ -29,7 +29,7 @@ expensive way.
 ## How to read these
 
 Start with any pattern's `README.md`: the problem, the mechanism, how to use it, and *what fails
-without it*. Then the decision records in [`docs/decisions/`](docs/decisions/) — each names the
+silently*. Then the decision records in [`docs/decisions/`](docs/decisions/) — each names the
 option that lost and why, and several of the losers were the obvious choice.
 
 **The treatment varies by pattern, deliberately.** One of these is forty lines of XML whose value
@@ -40,7 +40,7 @@ Forcing one template on both would produce a padded page and a cramped one:
 |---|---|---|---|
 | Passwordless database access | the dependency set — the whole pattern | how the "before" was measured | ADR-001 |
 | PaaS telemetry bridge | — architecture and semantics, not code | in the README | ADR-003, ADR-004 |
-| Alert relay | ~120 lines, runs standalone | in the README | ADR-002 |
+| Alert relay | ~230 lines with tests; the delivery-state semantics are the point | in the README | ADR-002 |
 | Agentless log ingestion | — the shape and the alerting trap | in the README | — |
 | Reclaimed-capacity early warning | — the wiring and the honest budget | in the README | ADR-005 |
 
@@ -64,4 +64,17 @@ sixteen rules covering internal identifiers, credentials, hostnames and local pa
 two strictness levels, because a portfolio may reasonably name the tools it used and public
 writing about the same work should not.
 
-The reference implementations are written fresh for this repository.
+It also runs in CI on every push, under the generic rules that need no private term list. The
+job first plants a key-shaped string and refuses to trust its own clean run unless the scanner
+trips on it — the same rule the patterns ask of everything else: a check that cannot be seen to
+fail has not been seen to work.
+
+The reference implementations are written fresh for this repository, and tested.
+
+## Changelog
+
+- **2026-09-27** — Alert relay: delivery state (post once, mark resolved, post again on a
+  re-fire), the alarm that must not depend on the relay, and grouping by entity; a test suite for
+  the reference; CI with a positive control for the redaction scan. The load-bearing section of
+  every pattern is now titled *What fails silently*.
+- **2026-09-07** — Five patterns, five decision records, one runnable reference.

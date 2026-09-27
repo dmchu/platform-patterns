@@ -71,7 +71,7 @@ fix later.
 
 ---
 
-## What fails without it — and the one that matters most
+## What fails silently
 
 **The whole path can go dark and look perfectly healthy.** In the reference estate an earlier
 generation of this bridge ran for roughly three and a half months with its pods `Running`, being

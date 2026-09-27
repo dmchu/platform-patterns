@@ -1,0 +1,48 @@
+name: checks
+
+# Two mechanisms, as the README asks of every pattern: one that does the job (the redaction
+# scan, the tests) and one whose only job is to prove the first is still running (the planted
+# secret below). A scanner that passes an empty rule set, a moved directory or a broken regex
+# looks exactly like a clean repository. The positive control is what tells them apart.
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  redact:
+    name: No employer-identifying detail
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Positive control - the scanner must trip on a planted key
+        run: |
+          set -euo pipefail
+          # Assembled at runtime so this file does not itself carry a key-shaped string.
+          printf 'aws_access_key_id = AKIA%s\n' 'PLANTEDCONTROL01' > "$RUNNER_TEMP/control.txt"
+          if python3 .tools/redact-check.py --terms .tools/terms.example.json "$RUNNER_TEMP/control.txt"; then
+            echo "::error::the scanner passed a planted key; a clean run below would prove nothing" >&2
+            exit 1
+          fi
+          echo "control tripped the scanner, as it must"
+
+      - name: Repository is clean under the shipped generic rules
+        # The real term file is local and gitignored (see .tools/redact-check.py). These are the
+        # rules that need no private knowledge: cloud keys, chat tokens, private keys, account
+        # numbers, local paths, managed-database hostnames.
+        run: python3 .tools/redact-check.py --terms .tools/terms.example.json .
+
+  tests:
+    name: Reference implementations
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --quiet pytest
+      - run: python -m pytest patterns -q

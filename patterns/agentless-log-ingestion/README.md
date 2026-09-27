@@ -40,7 +40,7 @@ Six parts. The last two are the ones usually missing.
 
 ---
 
-## The failure this pattern exists to prevent
+## What fails silently
 
 **A pusher dies and every alert on its data turns green.**
 
