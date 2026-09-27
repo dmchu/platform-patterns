@@ -43,6 +43,9 @@ from "the signal is dead" in one call each, with nothing changed and nothing pag
 - It must refuse a green result over an empty estate or an empty history. The first version of
   the underlying tooling in this repository's estate did not, and a query returning zero over
   zero lines scanned was read as "no failures" more than once.
+- History alone cannot tell flap suppression from a pending period the signal cannot outlast.
+  The length of each pending episode against the period can, so the audit prints it rather than
+  deciding.
 - History has a horizon (31 days here). Evidence about what a rule reported during an incident
   must be captured before the rule is changed, or it is gone.
 - It ends at the rule. Delivery — that a firing rule reaches a human — is a separate audit against

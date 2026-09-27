@@ -51,10 +51,14 @@ in a different place and a check on one says nothing about the others:
 
 Then two tests that do not require reading a single rule definition:
 
-**State history is the audit trail.** A rule with `Pending` entries and no `Alerting` entry is
-dead at part 3. A rule whose history is only `NoData` is dead at part 1. A rule with no history at
-all over a window longer than its threshold event's rate has never been asked. All three are
-visible without opening the JSON, and the JSON would not have shown them anyway.
+**State history is the audit trail.** A rule whose history is only `NoData` is dead at part 1.
+A rule that reached `Pending` many times and never `Alerting` is either doing its job or cannot
+complete, and the same history says which: the length of each pending episode against the
+pending period. Twenty-five episodes that each end after one evaluation, on a rule whose period
+is five, is the visibility trap. Episodes that run to most of the period and then drop are flap
+suppression working. A rule with *no* history is unverified, not dead: history records
+transitions, and a rule that stayed `Normal` for a month has none. None of this needs the JSON
+open, and the JSON would not have shown it anyway.
 
 **The evaluator is the positive control.** The platform exposes its rule engine for a one-off
 run (Grafana: `POST /api/v1/eval`): send the rule's own query chain with a widened window and
@@ -77,14 +81,19 @@ python3 reference/audit.py --days 14
 ```
 
 ```
-EVALUATOR_ON_REDUCE      q3w8e1r7t5y2u9  'Fatal errors (production)'  condition B is reduce; evaluator [2] is ignored
-FOR_EXCEEDS_WINDOW       h4j6k8l1z3x5c7  'Workflow failure (staging)'  for=5m, window=5m: check the signal's cadence
-NODATA_ONLY              v9b2n4m6a8s1d3  'Successful transactions'     41 transitions, all NoData
-PENDING_NEVER_ALERTING   f5g7h9j1k3l5p7  'Onboarding workflow failed'  25 pending, 0 alerting in the window
-audited 262 rules, 3,118 history entries: 4 findings
+DEAD_EVALUATOR           q3w8e1r7t5y2u9   'Fatal errors (production)'  condition B is reduce; evaluator gt [2] is ignored, any non-zero value fires
+FOR_ON_SINGLE_EVENT      h4j6k8l1z3x5c7   'Frontend error count'       for=1d on a 5m count of events with a > 0 threshold: one event cannot fire it
+PENDING_NEVER_ALERTING   f5g7h9j1k3l5p7   'Onboarding workflow failed' 25 pending episodes, 0 alerting; longest 1m, median 1m of for=5m (20%)
+
+EVALUATOR_ON_REDUCE      w1e3r5t7y9u2i4   'Job run failed'             condition B is reduce: fires on any non-zero value; confirm that is the intent
+TOO_MANY_NO_LIVENESS     a8s6d4f2g1h3j5   'Payments stuck'             "> N" with `or vector(0)` and no-data OK: an outage renders as 0; pair it with an absence rule on the same stream
+QUIET                    118 rules had no transitions in 30d; history cannot vouch for them (--show-quiet to list)
+
+audited 178 rules, 10102 history entries: 3 findings, 120 to review
 ```
 
-The identifiers and titles above are invented; the findings are the real ones.
+Findings need a decision; review items are rules the audit can neither vouch for nor condemn.
+The identifiers and titles above are invented; the shapes and numbers are from a real run.
 
 Then the part the script cannot do: for each finding, run the evaluator control on a window with
 a known event, and read the receiver end to end. A rule that passes every static check and fires
@@ -100,6 +109,16 @@ enabled — each produces a clean report. The reference refuses to exit green un
 least one rule and read at least one history entry, for the same reason this repository's CI
 plants a secret before trusting its own scan: **a check that cannot be seen to fail has not been
 seen to work.**
+
+**The audit's first run was mostly the audit's own noise.** On an estate of about 260 rules the
+first version printed 308 findings. Four of its six checks were wrong in the same direction: it
+counted recording rules, which have no alert state, as rules with no history; it called every
+quiet rule dead, when history only records transitions; it flagged every pending period at or
+above the window, when a continuous signal makes that fine and only a sparse one makes it fatal;
+and it flagged every `or vector(0)`, when on an absence rule that is the correct idiom. The
+two-tier output above is the repair, made the same day. The rule it re-taught is the one this
+repository keeps re-learning: a report with 308 lines is not read, and an unread audit is worse
+than none.
 
 **History has a horizon.** State history here is capped at 31 days. During one investigation the
 first half of the incident had already aged out by the time anyone looked, and the evidence of

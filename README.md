@@ -75,6 +75,10 @@ The reference implementations are written fresh for this repository, and tested.
 
 ## Changelog
 
+- **2026-09-27, later** — Liveness audit `v1.2.1`, after its first run on a real estate printed
+  308 lines, most of them the tool's own: findings and review tiers, pending-episode lengths
+  against the period, recording and quiet rules no longer counted as dead, and the
+  `or vector(0)` check now respects the comparison direction.
 - **2026-09-27** — Sixth pattern: *Alert rules that cannot fire* — ten dead-rule shapes from one
   quarter, the history and evaluator tests, a read-only audit script that refuses a green result
   over nothing, and ADR-006 on why definitions are not the thing to audit.
