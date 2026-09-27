@@ -1,6 +1,6 @@
 # platform-patterns
 
-Five patterns from running a small payments platform on AWS — the reusable shape of each, why it
+Six patterns from running a small payments platform on AWS — the reusable shape of each, why it
 is built that way, and what fails silently without it.
 
 Each is a **boundary**: a place where two systems that do not speak the same language have to
@@ -25,6 +25,7 @@ expensive way.
 | [Alert relay and routing contract](patterns/alert-relay/) | N alert producers ↔ one chat destination | a routing key that matches nothing, dropped with no queue and no retry |
 | [Agentless log ingestion](patterns/agentless-log-ingestion/) | sources with no agent ↔ a log store | the pusher dies and every alert on its data turns **green** |
 | [Reclaimed-capacity early warning](patterns/reclaimed-capacity-early-warning/) | a cloud provider's capacity decisions ↔ your workloads | the subscription is dark for months while reclaims are handled ungracefully |
+| [Alert rules that cannot fire](patterns/alert-liveness-audit/) | an alert rule ↔ the signal it claims to watch | `Normal`, green, counted as coverage, and structurally unable to fire — ten ways in one quarter |
 
 ## How to read these
 
@@ -43,6 +44,7 @@ Forcing one template on both would produce a padded page and a cramped one:
 | Alert relay | ~230 lines with tests; the delivery-state semantics are the point | in the README | ADR-002 |
 | Agentless log ingestion | — the shape and the alerting trap | in the README | — |
 | Reclaimed-capacity early warning | — the wiring and the honest budget | in the README | ADR-005 |
+| Alert rules that cannot fire | a read-only audit script with tests | in the README | ADR-006 |
 
 ## Why the decision records matter more than the implementations
 
@@ -73,6 +75,9 @@ The reference implementations are written fresh for this repository, and tested.
 
 ## Changelog
 
+- **2026-09-27** — Sixth pattern: *Alert rules that cannot fire* — ten dead-rule shapes from one
+  quarter, the history and evaluator tests, a read-only audit script that refuses a green result
+  over nothing, and ADR-006 on why definitions are not the thing to audit.
 - **2026-09-27** — Alert relay: delivery state (post once, mark resolved, post again on a
   re-fire), the alarm that must not depend on the relay, and grouping by entity; a test suite for
   the reference; CI with a positive control for the redaction scan. The load-bearing section of
