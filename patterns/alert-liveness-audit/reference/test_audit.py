@@ -84,7 +84,7 @@ def test_pending_without_alerting_reports_the_episode_lengths():
     h = hist("Normal (NoData)", "Pending", "Normal (NoData)", "Pending", "Normal (NoData)")
     f = audit.classify_history("u", "t", h, pending_s=300)
     assert f.kind == "PENDING_NEVER_ALERTING" and f.is_finding
-    assert "2 pending episodes, 0 alerting" in f.detail
+    assert "2 pending episodes over 1 instance, 0 alerting" in f.detail
     assert "longest 1m, median 1m of for=5m (20%)" in f.detail
 
 

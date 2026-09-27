@@ -213,7 +213,8 @@ def classify_history(uid: str, title: str, history: list[tuple[int, str, str]],
     shape = (f"longest {human(longest)}, median {human(median)} of for={human(pending_s)}"
              f" ({100 * longest / pending_s:.0f}%)" if pending_s else f"longest {human(longest)}")
     return Finding("PENDING_NEVER_ALERTING", uid, title,
-                   f"{len(episodes)} pending episodes over {instances} instances, 0 alerting; {shape}")
+                   f"{len(episodes)} pending episodes over {instances} instance"
+                   f"{'s' if instances != 1 else ''}, 0 alerting; {shape}")
 
 
 # --------------------------------------------------------------------------- Grafana API
