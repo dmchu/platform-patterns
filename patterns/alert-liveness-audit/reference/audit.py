@@ -48,7 +48,10 @@ import urllib.request
 from dataclasses import dataclass
 
 RANGE_RE = re.compile(r"\[(\d+)([smhd])\]")
-EVENT_FN_RE = re.compile(r"\b(count_over_time|sum_over_time|increase|changes)\(")
+# Windowed counts of discrete events. `increase()` and `changes()` are deliberately NOT here:
+# over a continuously scraped counter they are rate-shaped, and the standard kube-prometheus
+# rules pair them with a pending period longer than the window on purpose.
+EVENT_FN_RE = re.compile(r"\b(count_over_time|sum_over_time)\(")
 VECTOR0_RE = re.compile(r"\bor\s+vector\(0\)")
 UNIT_S = {"s": 1, "m": 60, "h": 3600, "d": 86400}
 FINDING_KINDS = {"PENDING_NEVER_ALERTING", "NODATA_ONLY", "DEAD_EVALUATOR", "FOR_ON_SINGLE_EVENT"}
@@ -213,8 +216,8 @@ def classify_history(uid: str, title: str, history: list[tuple[int, str, str]],
     shape = (f"longest {human(longest)}, median {human(median)} of for={human(pending_s)}"
              f" ({100 * longest / pending_s:.0f}%)" if pending_s else f"longest {human(longest)}")
     return Finding("PENDING_NEVER_ALERTING", uid, title,
-                   f"{len(episodes)} pending episodes over {instances} instance"
-                   f"{'s' if instances != 1 else ''}, 0 alerting; {shape}")
+                   f"{len(episodes)} pending episode{'s' if len(episodes) != 1 else ''} over "
+                   f"{instances} instance{'s' if instances != 1 else ''}, 0 alerting; {shape}")
 
 
 # --------------------------------------------------------------------------- Grafana API

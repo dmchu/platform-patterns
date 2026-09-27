@@ -89,7 +89,7 @@ EVALUATOR_ON_REDUCE      w1e3r5t7y9u2i4   'Job run failed'             condition
 TOO_MANY_NO_LIVENESS     a8s6d4f2g1h3j5   'Payments stuck'             "> N" with `or vector(0)` and no-data OK: an outage renders as 0; pair it with an absence rule on the same stream
 QUIET                    118 rules had no transitions in 30d; history cannot vouch for them (--show-quiet to list)
 
-audited 178 rules, 10102 history entries: 3 findings, 120 to review
+audited 177 rules, 20628 history entries: 44 findings, 158 to review
 ```
 
 Findings need a decision; review items are rules the audit can neither vouch for nor condemn.

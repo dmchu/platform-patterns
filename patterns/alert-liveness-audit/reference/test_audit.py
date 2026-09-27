@@ -53,6 +53,14 @@ def test_for_at_least_the_window_on_a_continuous_metric_is_only_a_review_item():
     assert not f[0].is_finding
 
 
+def test_changes_and_increase_over_a_scraped_counter_are_continuous():
+    """The kube-prometheus shape: changes()/increase() with a longer pending period is by design."""
+    f = audit.check_definition(rule(for_="15m", exprs=["changes(kube_daemonset_status_updated[5m]) == 0"]), LOGS)
+    assert kinds(f) == ["FOR_EXCEEDS_WINDOW"]
+    f = audit.check_definition(rule(for_="15m", exprs=["sum(count_over_time(pushed_metric[5m]))"]), LOGS)
+    assert kinds(f) == ["FOR_ON_SINGLE_EVENT"]
+
+
 def test_for_shorter_than_the_window_is_not_flagged():
     assert audit.check_definition(rule(for_="2m", exprs=["avg_over_time(x[5m])"]), LOGS) == []
 
