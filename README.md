@@ -71,10 +71,15 @@ job first plants a key-shaped string and refuses to trust its own clean run unle
 trips on it — the same rule the patterns ask of everything else: a check that cannot be seen to
 fail has not been seen to work.
 
+It also checks what no content scan reads: every commit and tag must carry the public noreply
+address, and CI proves that check can fail before trusting it.
+
 The reference implementations are written fresh for this repository, and tested.
 
 ## Changelog
 
+- **2026-09-28** — Commit and tag identities are checked in CI, with a planted foreign address
+  as the positive control.
 - **2026-09-27, later** — Liveness audit `v1.2.1`, after its first run on a real estate printed
   308 lines, most of them the tool's own: findings and review tiers, pending-episode lengths
   against the period, recording and quiet rules no longer counted as dead, and the

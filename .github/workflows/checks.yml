@@ -18,6 +18,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0  # the identity check reads every commit and tag, not only the tip
 
       - name: Positive control - the scanner must trip on a planted key
         run: |
@@ -35,6 +37,25 @@ jobs:
         # rules that need no private knowledge: cloud keys, chat tokens, private keys, account
         # numbers, local paths, managed-database hostnames.
         run: python3 .tools/redact-check.py --terms .tools/terms.example.json .
+
+      # File content is not the only place an identity can leak: commit and tag metadata carry
+      # an email address no content scanner reads. Same two mechanisms as above.
+      - name: Positive control - the identity check must trip on a planted address
+        run: |
+          set -euo pipefail
+          git clone -q . "$RUNNER_TEMP/identity-control"
+          git -C "$RUNNER_TEMP/identity-control" -c user.name=control -c user.email=control@example.com \
+            commit -q --allow-empty -m "planted identity"
+          # Output silenced: the control is meant to fail, and its ::error:: line would otherwise
+          # post a misleading annotation on every green run.
+          if bash .tools/identity-check.sh "$RUNNER_TEMP/identity-control" >/dev/null 2>&1; then
+            echo "::error::the identity check passed a planted address; a clean run below would prove nothing" >&2
+            exit 1
+          fi
+          echo "control tripped the identity check, as it must"
+
+      - name: Every commit and tag carries only the public noreply address
+        run: bash .tools/identity-check.sh .
 
   tests:
     name: Reference implementations
