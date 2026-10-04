@@ -41,7 +41,7 @@ Forcing one template on both would produce a padded page and a cramped one:
 | Pattern | Runnable reference | Long-form notes | Decision records |
 |---|---|---|---|
 | Passwordless database access | the dependency set — the whole pattern | how the "before" was measured | ADR-001 |
-| PaaS telemetry bridge | — architecture and semantics, not code | in the README | ADR-003, ADR-004 |
+| PaaS telemetry bridge | one receiver, two delivery semantics, a probe independent of the telemetry; with tests | in the README | ADR-003 (+ addendum), ADR-004 |
 | Alert relay | ~230 lines with tests; the delivery-state semantics are the point | in the README | ADR-002 |
 | Agentless log ingestion | — the shape and the alerting trap | in the README | — |
 | Reclaimed-capacity early warning | — the wiring and the honest budget | in the README | ADR-005 |
@@ -80,6 +80,10 @@ The reference implementations are written fresh for this repository, and tested.
 
 ## Changelog
 
+- **2026-10-04, later** — PaaS telemetry bridge: a runnable reference — one receiver with two
+  delivery semantics, a label allowlist, sampling by class, dedupe by id on both paths, and a
+  probe that proves ingestion end to end where `/healthz` proves only that a process is up; plus
+  an addendum to ADR-003, because the platform now documents a per-entry id on the drain.
 - **2026-10-04** — Seventh pattern: *Aggregation recommendations judged by their consumers* — a
   467-row queue labelled savings that summed to an 18,800-series expansion, a read-only review
   script that prints the queue's direction first and refuses a green result over nothing, and

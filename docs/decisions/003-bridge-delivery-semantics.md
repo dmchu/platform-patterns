@@ -1,6 +1,6 @@
 # ADR-003 — Acknowledge the log drain, fail the event webhook
 
-**Status:** accepted · **Context:** a telemetry bridge with two ingest paths
+**Status:** accepted; addendum 2026-10-04 · **Context:** a telemetry bridge with two ingest paths
 
 ## Decision
 
@@ -39,3 +39,20 @@ revisit is any observed duplicate in the counters the events feed.
 
 The platform adds per-record delivery identifiers to the drain, at which point both paths can
 have the same semantics and this ADR becomes unnecessary.
+
+## Addendum (2026-10-04)
+
+The platform now documents a required unique `id` on every drain entry, so the "Reopen if"
+condition above has partially fired: a drain retry *can* be deduplicated. The reference
+implementation therefore dedupes drain records by id within a TTL, the same way it dedupes
+webhook deliveries.
+
+Acknowledge-on-failure stays the default. The dedupe is still per-instance and in-memory, and a
+batch retried after a scale-out lands on an instance that never saw the first delivery; the
+accepted limitation above is unchanged, and so is the coupling: asking for the retry is only as
+safe as the dedupe is shared. The retry choice is therefore exposed as configuration
+(`BRIDGE_DRAIN_FAIL_ON_BACKEND_ERROR`) rather than hard-coded, so an estate that makes the dedupe
+shared can flip it without touching code.
+
+Reopen again if the dedupe becomes shared state. The switch should then default to the retry and
+the two paths converge, which is what the original "Reopen if" predicted.

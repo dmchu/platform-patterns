@@ -1,0 +1,20 @@
+{
+  "_comment": [
+    "Point BRIDGE_CONFIG at a copy of this file. Secrets never live here: they come from the",
+    "environment only. Any key can be overridden by its BRIDGE_* variable (see bridge.py).",
+    "service_map: platform project id OR project name -> the service name your traces use.",
+    "label_allowlist: the ONLY fields that may become labels; everything else rides inside the line.",
+    "sample_rates: errors, fatals and crashes are always kept regardless of these."
+  ],
+  "service_map": {
+    "gdufoJxB6b9b1fEqr1jUtFkyavUU": "storefront-web",
+    "my-app": "storefront-web",
+    "docs-site": "docs-web",
+    "admin-console-preview": "admin-console"
+  },
+  "label_allowlist": ["service_name", "service_identity", "source", "level", "environment", "platform"],
+  "sample_rates": {
+    "static": 0.1,
+    "default": 1.0
+  }
+}
