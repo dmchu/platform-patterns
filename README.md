@@ -1,6 +1,6 @@
 # platform-patterns
 
-Six patterns from running a small payments platform on AWS — the reusable shape of each, why it
+Seven patterns from running a small payments platform on AWS — the reusable shape of each, why it
 is built that way, and what fails silently without it.
 
 Each is a **boundary**: a place where two systems that do not speak the same language have to
@@ -26,6 +26,7 @@ expensive way.
 | [Agentless log ingestion](patterns/agentless-log-ingestion/) | sources with no agent ↔ a log store | the pusher dies and every alert on its data turns **green** |
 | [Reclaimed-capacity early warning](patterns/reclaimed-capacity-early-warning/) | a cloud provider's capacity decisions ↔ your workloads | the subscription is dark for months while reclaims are handled ungracefully |
 | [Alert rules that cannot fire](patterns/alert-liveness-audit/) | an alert rule ↔ the signal it claims to watch | `Normal`, green, counted as coverage, and structurally unable to fire — ten ways in one quarter |
+| [Aggregation recommendations judged by their consumers](patterns/metric-aggregation-review/) | a cost engine's recommendation queue ↔ the dashboards and alerts that read the metrics | a queue labelled *savings* that is a 60% **expansion**, approved one plausible row at a time |
 
 ## How to read these
 
@@ -45,6 +46,7 @@ Forcing one template on both would produce a padded page and a cramped one:
 | Agentless log ingestion | — the shape and the alerting trap | in the README | — |
 | Reclaimed-capacity early warning | — the wiring and the honest budget | in the README | ADR-005 |
 | Alert rules that cannot fire | a read-only audit script with tests | in the README | ADR-006 |
+| Aggregation recommendations judged by their consumers | a read-only review script with tests; the verdict checks are the point | in the README | ADR-007 |
 
 ## Why the decision records matter more than the implementations
 
@@ -78,6 +80,10 @@ The reference implementations are written fresh for this repository, and tested.
 
 ## Changelog
 
+- **2026-10-04** — Seventh pattern: *Aggregation recommendations judged by their consumers* — a
+  467-row queue labelled savings that summed to an 18,800-series expansion, a read-only review
+  script that prints the queue's direction first and refuses a green result over nothing, and
+  ADR-007 on why usage counts are evidence of a query, not of a consumer.
 - **2026-09-28** — Commit and tag identities are checked in CI, with a planted foreign address
   as the positive control.
 - **2026-09-27, later** — Liveness audit `v1.2.1`, after its first run on a real estate printed
